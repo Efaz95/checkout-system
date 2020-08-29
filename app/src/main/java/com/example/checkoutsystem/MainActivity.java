@@ -32,6 +32,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     String username = "Efaz";
+    String fireIndex1;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -40,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
         final ArrayList<String> itemsList = new ArrayList();
 
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
 
         ref.child("items").addValueEventListener(new ValueEventListener() {
             @Override
@@ -92,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
             public void onTick(long millisUntilFinished) {
                 timerView.setTextColor(Color.BLACK);
                 timerView.setText("Please return the item by: " + millisUntilFinished / 1000 + " seconds");
+                ref.child("items/"+fireIndex1+"/timeRemaining").setValue(millisUntilFinished / 1000);
             }
             public void onFinish() {
                 timerView.setText("Item is overdue!");
@@ -138,7 +140,9 @@ public class MainActivity extends AppCompatActivity {
                                 instruction.setText("Tap on item to checkout");
                                 listView2.setAdapter(availabilityAdapter);
                                 timerView.setVisibility(View.INVISIBLE);
+                                countDownTimer.cancel();
                                 updateData(Integer.toString(i+1), "Available");
+                                ref.child("items/"+fireIndex1+"/timeRemaining").removeValue();
                                 Toast.makeText(getApplicationContext(), "Thanks for returning", Toast.LENGTH_SHORT).show();
                             }});
                         AD.show();
@@ -156,14 +160,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateData(String fireIndex, String value) {
+        fireIndex1 = fireIndex;
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
         if (value == "Not Available"){
             ref.child("items/"+fireIndex+"/itemAvailability").setValue(value);
-            ref.child("items/"+fireIndex+"/user").setValue(username);
+            ref.child("items/"+fireIndex+"/checkedOutBy").setValue(username);
         }
         else {
             ref.child("items/"+fireIndex+"/itemAvailability").setValue(value);
-            ref.child("items/"+fireIndex+"/user").removeValue();
+            ref.child("items/"+fireIndex+"/checkedOutBy").removeValue();
         }
 
     }
