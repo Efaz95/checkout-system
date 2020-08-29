@@ -31,6 +31,8 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    String username = "Efaz";
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        String username = "Efaz";
         TextView welcomeTitle = findViewById(R.id.welcomeTitle);
         welcomeTitle.append(" " + username);
 
@@ -156,7 +157,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateData(String fireIndex, String value) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-        ref.child("items/"+fireIndex+"/itemAvailability").setValue(value);
+        if (value == "Not Available"){
+            ref.child("items/"+fireIndex+"/itemAvailability").setValue(value);
+            ref.child("items/"+fireIndex+"/user").setValue(username);
+        }
+        else {
+            ref.child("items/"+fireIndex+"/itemAvailability").setValue(value);
+            ref.child("items/"+fireIndex+"/user").removeValue();
+        }
+
     }
 
 
