@@ -39,35 +39,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final ArrayList<String> itemsList = new ArrayList();
-
         final DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-
-        ref.child("items").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()){
-                    String xName = ds.child("itemName").getValue().toString();
-                    String xAvailability = ds.child("itemAvailability").getValue().toString();
-                    Log.d("Checkout", "🔥🔥 "+ xName + " - " + xAvailability);
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-
-
-        });
-
 
         TextView welcomeTitle = findViewById(R.id.welcomeTitle);
         welcomeTitle.append(" " + username);
 
         final String[] items = {"Arduino", "Drone", "Laptop", "Camera",};
         final String[] itemsAvailability = {"Available", "Available", "Available", "Available"};
+
 
         final ArrayList<String> itemsCheckedOut = new ArrayList<>();
 
@@ -83,17 +62,40 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<String> itemsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items);
         final ArrayAdapter<String> availabilityAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, itemsAvailability);
 
-        ListView listView1 = (ListView) findViewById(R.id.itemsList);
-        listView1.setAdapter(itemsAdapter);
+        final ListView itemListView = (ListView) findViewById(R.id.itemsList);
+        itemListView.setAdapter(itemsAdapter);
 
-        final ListView listView2 = (ListView) findViewById(R.id.availability);
-        listView2.setAdapter(availabilityAdapter);
+        final ListView availabilityListView = (ListView) findViewById(R.id.availability);
+        availabilityListView.setAdapter(availabilityAdapter);
+
+        ref.child("items").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    String xName = ds.child("itemName").getValue().toString();
+                    String xAvailability = ds.child("itemAvailability").getValue().toString();
+
+                }
+
+                Log.d("Checkout", "🔥🔥 "+ items);
+                Log.d("Checkout", "🔥🔥 "+ itemsAvailability);
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+
+
+        });
+        
 
         final CountDownTimer countDownTimer = new CountDownTimer(10000, 1000) {
             public void onTick(long millisUntilFinished) {
                 timerView.setTextColor(Color.BLACK);
                 timerView.setText("Please return the item by: " + millisUntilFinished / 1000 + " seconds");
-                ref.child("items/"+fireIndex1+"/timeRemaining").setValue(millisUntilFinished / 1000);
+                ref.child("items/"+fireIndex1+"/timeRemaining").setValue(millisUntilFinished / 1000 + " seconds");
             }
             public void onFinish() {
                 timerView.setText("Item is overdue!");
@@ -101,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        listView1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        itemListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int i, long l) {
 
@@ -114,12 +116,12 @@ public class MainActivity extends AppCompatActivity {
                     .setMessage("Are you sure?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            itemsAvailability[i] = "Not Available";
+                            itemsAvailability[i]=("Not Available");
                             text1.setTextColor(Color.RED);
                             itemsCheckedOut.add(0, x);
-                            itemscheckedbyuser.setText("• "+itemsCheckedOut.get(0));
+                            itemscheckedbyuser.setText("• "+ itemsCheckedOut.get(0));
                             Toast.makeText(getApplicationContext(), "You checked out 1 " + x, Toast.LENGTH_SHORT).show();
-                            listView2.setAdapter(availabilityAdapter);
+                            availabilityListView.setAdapter(availabilityAdapter);
                             instruction.setText("Tap on item to return");
                             timerView.setVisibility(View.VISIBLE);
                             updateData(Integer.toString(i+1), "Not Available");
@@ -133,12 +135,12 @@ public class MainActivity extends AppCompatActivity {
                         .setMessage("Are you returning the item?")
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                itemsAvailability[i] = "Available";
+                                itemsAvailability[i] = ("Available");
                                 text1.setTextColor(Color.BLACK);
                                 itemsCheckedOut.remove(0);
                                 itemscheckedbyuser.setText("None");
                                 instruction.setText("Tap on item to checkout");
-                                listView2.setAdapter(availabilityAdapter);
+                                availabilityListView.setAdapter(availabilityAdapter);
                                 timerView.setVisibility(View.INVISIBLE);
                                 countDownTimer.cancel();
                                 updateData(Integer.toString(i+1), "Available");
@@ -152,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                listView2.setAdapter(availabilityAdapter);
+                availabilityListView.setAdapter(availabilityAdapter);
 
             }
         });
