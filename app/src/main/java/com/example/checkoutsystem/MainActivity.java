@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
         final ArrayList<String> itemsList = new ArrayList();
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-        updateData();
 
         ref.child("items").addValueEventListener(new ValueEventListener() {
             @Override
@@ -60,13 +59,12 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        updateData();
 
         String username = "Efaz";
         TextView welcomeTitle = findViewById(R.id.welcomeTitle);
         welcomeTitle.append(" " + username);
 
-        final String[] items = {"Drone", "Laptop", "Camera", "Arduino"};
+        final String[] items = {"Arduino", "Drone", "Laptop", "Camera",};
         final String[] itemsAvailability = {"Available", "Available", "Available", "Available"};
 
         final ArrayList<String> itemsCheckedOut = new ArrayList<>();
@@ -121,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
                             listView2.setAdapter(availabilityAdapter);
                             instruction.setText("Tap on item to return");
                             timerView.setVisibility(View.VISIBLE);
+                            updateData(Integer.toString(i+1), "Not Available");
                             countDownTimer.start();
                         }});
                     AD.show();
@@ -138,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
                                 instruction.setText("Tap on item to checkout");
                                 listView2.setAdapter(availabilityAdapter);
                                 timerView.setVisibility(View.INVISIBLE);
+                                updateData(Integer.toString(i+1), "Available");
                                 Toast.makeText(getApplicationContext(), "Thanks for returning", Toast.LENGTH_SHORT).show();
                             }});
                         AD.show();
@@ -154,9 +154,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void updateData() {
+    private void updateData(String fireIndex, String value) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-        ref.child("items/1/itemAvailability").setValue("Available");
+        ref.child("items/"+fireIndex+"/itemAvailability").setValue(value);
     }
 
 
